@@ -1,0 +1,90 @@
+{
+  "name": "outlook-email-links",
+  "displayName": "Outlook Email Links",
+  "description": "Convert Outlook Web message URLs into deep links in Markdown.",
+  "version": "0.1.0",
+  "publisher": "apeseckis",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apeseckis/outlook-email-link-vscode.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./dist/extension.cjs",
+  "scripts": {
+    "compile": "tsc --noEmit && node scripts/build.mjs",
+    "lint": "eslint src test scripts",
+    "test": "tsx --test test/converter.test.ts",
+    "test:integration": "node scripts/test-integration.mjs",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package --no-dependencies --out outlook-email-links.vsix"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "outlookLinks.convertAtCursor",
+        "title": "Convert Outlook Link",
+        "category": "Outlook Links",
+        "enablement": "editorLangId == markdown"
+      },
+      {
+        "command": "outlookLinks.convertAll",
+        "title": "Convert All in Current File",
+        "category": "Outlook Links",
+        "enablement": "editorLangId == markdown"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "outlookLinks.convertAtCursor",
+          "when": "editorLangId == markdown && config.outlookLinks.showContextMenu",
+          "group": "navigation@20"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Outlook Links",
+      "properties": {
+        "outlookLinks.enableQuickFix": {
+          "type": "boolean",
+          "scope": "resource",
+          "default": true,
+          "description": "Offer conversion Quick Fixes in Markdown."
+        },
+        "outlookLinks.showContextMenu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Convert Outlook Link in the editor context menu."
+        },
+        "outlookLinks.showNotifications": {
+          "type": "boolean",
+          "scope": "resource",
+          "default": false,
+          "description": "Show conversion counts, including zero, after conversion commands."
+        }
+      }
+    }
+  },
+  "overrides": { "minimatch": "^11.0.1" },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/vscode": "^1.95.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.1.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.14.0",
+    "mdast-util-from-markdown": "^2.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}
