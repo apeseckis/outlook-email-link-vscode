@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.vsix
+.vscode-test/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
+Thumbs.db
+THIRD_PARTY_NOTICES.txt
