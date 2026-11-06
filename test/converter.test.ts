@@ -51,6 +51,13 @@ for (const source of [
 test('finds only convertible text outside code', () => {
   assert.equal(apply(`\`${url}\` and ${url}`), `\`${url}\` and ${deep}`);
 });
+test('Markdown destination escapes preserve the semantic ID', () => {
+  assert.equal(apply(`[mail](${url.replace('SYNTHETIC_ID', 'SYNTHETIC\\_ID')})`), `[mail](${deep})`);
+});
+test('reference link labels are preserved', () => {
+  const source = `[${url}][ref]\n\n[ref]: https://example.com`;
+  assert.equal(apply(source), source);
+});
 test('cursor inside URL, start boundary and end boundary', () => {
   const edits = findConversions(`prefix ${url}`);
   assert.equal(selectConversions(edits, [{ start: 12, end: 12 }]).length, 1);

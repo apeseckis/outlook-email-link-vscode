@@ -24,7 +24,7 @@ export function findConversions(markdown: string): Replacement[] {
       if (match.index > 0 && /[\w/:%?=&+#.-]/.test(source[match.index - 1])) continue;
       // Markdown delimiters and sentence punctuation are outside a bare URL.
       const raw = match[0].replace(/[)\]},.;:!?]+$/, '');
-      const text = convertUrl(raw);
+      const text = convertUrl(raw.replace(/\\([!-/:-@[-`{-~])/g, '$1'));
       if (text) edits.push({ start: start + match.index, end: start + match.index + raw.length, text });
     }
   }
@@ -32,7 +32,8 @@ export function findConversions(markdown: string): Replacement[] {
     const start = node.position?.start.offset;
     const end = node.position?.end.offset;
     if (start === undefined || end === undefined) return;
-    if (node.type === 'code' || node.type === 'inlineCode' || node.type === 'html' || node.type === 'image') return;
+    if (node.type === 'code' || node.type === 'inlineCode' || node.type === 'html' || node.type === 'image'
+      || node.type === 'linkReference' || node.type === 'imageReference') return;
     if (node.type === 'link' || node.type === 'definition') {
       // Restrict scanning to the destination, never labels or optional titles.
       const source = markdown.slice(start, end);

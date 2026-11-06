@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import assert from 'node:assert/strict';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const url = 'https://outlook.cloud.microsoft/mail/inbox/id/SYNTHETIC_ID';
 const deep = 'https://outlook.office.com/mail/deeplink/read/SYNTHETIC_ID?ItemID=SYNTHETIC_ID&exvsurl=1';
@@ -21,9 +22,15 @@ export async function run(): Promise<void> {
   assert.equal(editor.document.getText(), source, 'cursor conversion undoes in one step');
   console.log('PASS: cursor conversion and real editor Undo');
 
-  const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
-    'vscode.executeCodeActionProvider', editor.document.uri, new vscode.Range(cursor, cursor), vscode.CodeActionKind.QuickFix.value);
-  const action = actions.find(item => item.title === 'Convert to Outlook Deep Link');
+  // The workbench invalidates code-action requests while an Undo change propagates.
+  // Wait for the actual action to become available, with a bounded failure timeout.
+  let action: vscode.CodeAction | undefined;
+  for (let attempt = 0; attempt < 40 && !action; attempt++) {
+    const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
+      'vscode.executeCodeActionProvider', editor.document.uri, new vscode.Range(cursor, cursor), vscode.CodeActionKind.QuickFix.value);
+    action = actions.find(item => item.title === 'Convert to Outlook Deep Link');
+    if (!action) await delay(250);
+  }
   assert.ok(action?.edit);
   await vscode.workspace.applyEdit(action.edit);
   assert.equal(editor.document.getText(), source.replace(url, deep));
